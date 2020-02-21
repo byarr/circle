@@ -1,0 +1,10 @@
+{
+  "slug": "gh/CircleCI-Public/api-preview-docs",
+  "name": "api-preview-docs",
+  "organization_name": "CircleCI-Public",
+  "vcs_info": {
+    "vcs_url": "https://github.com/CircleCI-Public/api-preview-docs",
+    "provider": "Bitbucket",
+    "default_branch": "master"
+  }
+}
