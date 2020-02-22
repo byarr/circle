@@ -1,5 +1,7 @@
 use serde;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use serde_json::Value;
 
 const BASE_PATH: &str = "https://circleci.com/api/v2";
 
@@ -19,6 +21,8 @@ pub struct Pipeline {
     updated_at: Option<String>,
     number: i64,
     state: String,
+    #[serde(flatten)]
+    extras: HashMap<String, Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
