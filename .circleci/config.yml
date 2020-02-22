@@ -34,3 +34,9 @@ jobs:
       - run:
           name: Run clippy
           command: cargo clippy --all
+      - run:
+          name: Build release
+          command: cargo build --release
+      - store_artifacts:
+          name: Store release build
+          path: /tmp/release/circ
