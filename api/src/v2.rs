@@ -1,5 +1,5 @@
 use serde::{Serialize, Deserialize};
-
+use serde;
 
 const BASE_PATH : &str = "https://circleci.com/api/v2";
 
@@ -25,6 +25,20 @@ pub struct Pipeline {
 pub struct PipelineList<> {
     pub items: Vec<Pipeline>,
     next_page_token: Option<String>
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct WorkflowRun {
+    id: String,
+    duration: i64,
+    created_at: String,
+    stopped_at: String,
+    status: String
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct RecentWorkflowRun {
+    pub items: Vec<WorkflowRun>
 }
 
 pub struct Client {
@@ -65,13 +79,26 @@ impl Client {
 
         let resp = query.send()?;
         let resp = resp.error_for_status()?;
-
-//        let body = resp.text();
-//        println!("{:?}", body);
-//        Ok(())
         resp.json()
-
     }
+
+    pub fn get_recent_workflow_runs(&self, slug: &str, workflow_name: &str, branch: Option<&str>) -> Result<RecentWorkflowRun, reqwest::Error> {
+        //GET /insights/{project-slug}/workflows/{workflow-name}
+
+        let url = format!("{}/insights/{}/workflows/{}", BASE_PATH, slug, workflow_name);
+        let mut query = self.client.get(&url)
+            .header(API_KEY_HEADER, &self.api_key);
+        query = match branch {
+            Some(b) => query.query(&[("branch", b)]),
+            None => query
+        };
+
+        let resp = query.send()?;
+        let resp = resp.error_for_status()?;
+        resp.json()
+    }
+
+
 }
 
 
