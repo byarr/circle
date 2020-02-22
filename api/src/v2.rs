@@ -23,8 +23,8 @@ pub struct Pipeline {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct PipelineList<> {
-    items: Vec<Pipeline>,
-    next_page_token: String
+    pub items: Vec<Pipeline>,
+    next_page_token: Option<String>
 }
 
 pub struct Client {
@@ -49,6 +49,26 @@ impl Client {
             .header(API_KEY_HEADER, &self.api_key)
             .send()?;
         let resp = resp.error_for_status()?;
+        resp.json()
+    }
+
+    pub fn get_pipelines_mine(&self, slug: &str, page_token: Option<&str>) -> Result<PipelineList, reqwest::Error> {
+        //GET /project/{project-slug}/pipeline/mine
+
+        let url = format!("{}/project/{}/pipeline/mine", BASE_PATH, slug);
+        let mut query = self.client.get(&url)
+            .header(API_KEY_HEADER, &self.api_key);
+        query = match page_token {
+            Some(token) => query.query(&[("page_token", token)]),
+            None => query
+        };
+
+        let resp = query.send()?;
+        let resp = resp.error_for_status()?;
+
+//        let body = resp.text();
+//        println!("{:?}", body);
+//        Ok(())
         resp.json()
 
     }
