@@ -5,7 +5,6 @@ fn main() {
     let a: Vec<String> = args().collect();
     println!("{:?}", a);
 
-
     let client = api::v2::Client::new(a.get(1).unwrap().to_string()).unwrap();
 
     println!("Project");
@@ -19,9 +18,9 @@ fn main() {
     pipelines.items.iter().for_each(|p| println!("{:?}", p));
     println!("=======");
 
-   let wf_runs =  client.get_recent_workflow_runs(slug, "workflow", None).unwrap();
+    let wf_runs = client
+        .get_recent_workflow_runs(slug, "workflow", None)
+        .unwrap();
     wf_runs.items.iter().for_each(|r| println!("{:?}", r));
     println!("=======");
-
-
 }
