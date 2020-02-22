@@ -39,4 +39,4 @@ jobs:
           command: cargo build --release
       - store_artifacts:
           name: Store release build
-          path: /tmp/release/circ
+          path: target/release/circ
