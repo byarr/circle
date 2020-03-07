@@ -11,3 +11,5 @@ api = { path="../api"}
 dirs = "2.0.2"
 serde_yaml = "0.8.11"
 serde = {version = "1.0.104", features = ["derive"]}
+git2 = "0.10"
+regex = "1.3.4"

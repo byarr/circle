@@ -1,6 +1,11 @@
 use std::env::args;
 
 fn main() {
+
+    let url = circ::origin_url(".");
+    println!("{:?}", url);
+
+
     println!("Hello, world!");
     let a: Vec<String> = args().collect();
     println!("{:?}", a);
