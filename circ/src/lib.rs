@@ -31,7 +31,7 @@ pub fn origin_url<P: AsRef<Path>>(p: P) -> Option<String> {
     })
 }
 
-fn to_slug(url: &str) -> Option<String> {
+pub fn to_slug(url: &str) -> Option<String> {
     let e = regex::Regex::new(r"[:|/]([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+).git$").unwrap();
     e.captures(url).map(|c| format!("gh/{}/{}", &c[1], &c[2]))
 }
