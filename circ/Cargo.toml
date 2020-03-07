@@ -8,3 +8,6 @@ edition = "2018"
 
 [dependencies]
 api = { path="../api"}
+dirs = "2.0.2"
+serde_yaml = "0.8.11"
+serde = {version = "1.0.104", features = ["derive"]}

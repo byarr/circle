@@ -5,7 +5,9 @@ fn main() {
     let a: Vec<String> = args().collect();
     println!("{:?}", a);
 
-    let client = api::v2::Client::new(a.get(1).unwrap().to_string()).unwrap();
+    let config = circ::load_config().unwrap();
+
+    let client = api::v2::Client::new(config.token).unwrap();
 
     println!("Project");
     let slug = "gh/byarr/dug";
