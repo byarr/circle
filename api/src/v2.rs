@@ -1,7 +1,7 @@
 use serde;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use serde_json::Value;
+use std::collections::HashMap;
 
 const BASE_PATH: &str = "https://circleci.com/api/v2";
 
