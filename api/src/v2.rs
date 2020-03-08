@@ -33,11 +33,17 @@ pub struct PipelineList {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct WorkflowRun {
-    id: String,
-    duration: i64,
-    created_at: String,
-    stopped_at: String,
-    status: String,
+    pub id: String,
+    pub duration: i64,
+    pub created_at: String,
+    pub stopped_at: String,
+    pub status: String,
+}
+
+impl WorkflowRun {
+    pub fn url(&self) -> String {
+        format!("https://circleci.com/workflow-run/{}", self.id)
+    }
 }
 
 #[derive(Debug, Serialize, Deserialize)]
