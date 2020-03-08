@@ -11,6 +11,7 @@ struct Circ {
 enum Command {
     Pipelines(Pipelines),
     Runs(WorkflowRuns),
+    Workflow(Workflow)
 }
 
 #[derive(StructOpt)]
@@ -25,6 +26,11 @@ struct WorkflowRuns {
 }
 
 
+#[derive(StructOpt)]
+struct Workflow {
+    #[structopt(short,long)]
+    id: String
+}
 
 fn main() {
 
@@ -44,6 +50,10 @@ fn main() {
             let wf_name = wf.name.unwrap_or("workflow".to_string());
             let runs = client.get_recent_workflow_runs(&slug, &wf_name, None).unwrap();
             runs.items.iter().for_each(|r| println!("{}\t{}\t{}", r.status, r.created_at, r.url()));
+        },
+        Command::Workflow(wf) => {
+            let wf = client.get_workflow(&wf.id).unwrap();
+            println!("{:?}", wf);
         }
 
     }

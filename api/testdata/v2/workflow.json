@@ -1,0 +1,10 @@
+{
+  "id": "string",
+  "name": "build-and-test",
+  "status": "success",
+  "created_at": "2020-03-08T08:02:01Z",
+  "stopped_at": "2020-03-08T08:02:01Z",
+  "pipeline_id": "string",
+  "pipeline_number": 0,
+  "project_slug": "gh/CircleCI-Public/api-preview-docs"
+}

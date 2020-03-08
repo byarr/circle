@@ -51,6 +51,19 @@ pub struct RecentWorkflowRun {
     pub items: Vec<WorkflowRun>,
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Workflow {
+    pub id: String,
+    pub name: String,
+    pub created_at: String,
+    pub stopped_at: String,
+    pub status: String,
+    pub pipeline_id: String,
+    pub pipeline_number: i64,
+    pub project_slug: String
+}
+
+
 pub struct Client {
     api_key: String,
     client: reqwest::blocking::Client,
@@ -116,6 +129,21 @@ impl Client {
         let resp = resp.error_for_status()?;
         resp.json()
     }
+    pub fn get_workflow(
+        &self,
+        id: &str
+    ) -> Result<Workflow, reqwest::Error> {
+        //GET /workflow/{id}
+
+        let url = format!(
+            "{}/workflow/{}",
+            BASE_PATH, id
+        );
+        let query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
+        let resp = query.send()?;
+        let resp = resp.error_for_status()?;
+        resp.json()
+    }
 }
 
 #[cfg(test)]
@@ -142,5 +170,12 @@ mod tests {
             std::fs::read_to_string("./testdata/v2/pipeline_list_response.json").unwrap();
         let pipeline: PipelineList = serde_json::from_str(&contents).unwrap();
         assert_eq!(pipeline.items.len(), 1);
+    }
+    #[test]
+    fn parse_workflow() {
+        let contents =
+            std::fs::read_to_string("./testdata/v2/workflow.json").unwrap();
+        let wf: Workflow = serde_json::from_str(&contents).unwrap();
+        assert_eq!(0, wf.pipeline_number);
     }
 }
