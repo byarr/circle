@@ -1,19 +1,17 @@
-use std::env::args;
+use circ::git::RepoInfo;
 
 fn main() {
-    let url = circ::origin_url(".").unwrap();
-    let slug = circ::to_slug(&url).unwrap();
+    let info = RepoInfo::from_path(".").unwrap();
+    let slug = info.slug().unwrap();
 
-    println!("{:?}", url);
-    println!("{:?}", slug);
-
+    println!("{:?}", info);
 
     let config = circ::load_config().unwrap();
 
     let client = api::v2::Client::new(config.token).unwrap();
 
     println!("Project");
-    let project = client.get_project(&slug).unwrap();
+    let project = client.get_project(& slug).unwrap();
     println!("{:?}", project);
     println!("=======");
 
