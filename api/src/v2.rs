@@ -21,8 +21,39 @@ pub struct Pipeline {
     updated_at: Option<String>,
     number: i64,
     state: String,
+    vcs: Vcs,
+    trigger: Trigger,
     #[serde(flatten)]
     extras: HashMap<String, Value>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Trigger {
+    #[serde(rename="type")]
+    trigger_type: String,
+    received_at: String,
+    actor: Actor
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Actor {
+    login: String,
+    avatar_url: String
+}
+
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Vcs {
+    commit: Option<Commit>,
+    #[serde(flatten)]
+    extras: HashMap<String, Value>,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+pub struct Commit {
+    subject: String,
+    body: String,
+
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -63,6 +94,13 @@ pub struct Workflow {
     pub project_slug: String
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct JobDetail {
+    web_url: String,
+    name: String,
+    #[serde(flatten)]
+    extras: HashMap<String, Value>,
+}
 
 pub struct Client {
     api_key: String,
@@ -129,6 +167,7 @@ impl Client {
         let resp = resp.error_for_status()?;
         resp.json()
     }
+
     pub fn get_workflow(
         &self,
         id: &str
@@ -138,6 +177,23 @@ impl Client {
         let url = format!(
             "{}/workflow/{}",
             BASE_PATH, id
+        );
+        let query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
+        let resp = query.send()?;
+        let resp = resp.error_for_status()?;
+        resp.json()
+    }
+
+    pub fn get_job_detail(
+        &self,
+        slug: &str,
+        number: &str
+    ) -> Result<JobDetail, reqwest::Error> {
+        //GET /project/{project-slug}/job/{job-number}
+
+        let url = format!(
+            "{}/project/{}/job/{}",
+            BASE_PATH, slug, number
         );
         let query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
         let resp = query.send()?;
@@ -178,4 +234,13 @@ mod tests {
         let wf: Workflow = serde_json::from_str(&contents).unwrap();
         assert_eq!(0, wf.pipeline_number);
     }
+
+    #[test]
+    fn parse_job_details() {
+        let contents =
+            std::fs::read_to_string("./testdata/v2/job_details.json").unwrap();
+        let jb: JobDetail = serde_json::from_str(&contents).unwrap();
+        assert_eq!("string", jb.web_url);
+    }
+
 }

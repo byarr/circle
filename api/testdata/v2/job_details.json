@@ -1,0 +1,49 @@
+{
+  "web_url": "string",
+  "project": {
+    "slug": "gh/CircleCI-Public/api-preview-docs",
+    "name": "api-preview-docs",
+    "external_url": "https://github.com/CircleCI-Public/api-preview-docs"
+  },
+  "parallel_runs": [
+    {
+      "index": 0,
+      "status": "string"
+    }
+  ],
+  "started_at": "2020-03-10T15:06:28Z",
+  "latest_workflow": {
+    "id": "string",
+    "name": "build-and-test"
+  },
+  "name": "string",
+  "executor": {
+    "type": "string",
+    "resource_class": "string"
+  },
+  "parallelism": 0,
+  "status": null,
+  "number": 0,
+  "pipeline": {
+    "id": "string"
+  },
+  "duration": 0,
+  "created_at": "2020-03-10T15:06:28Z",
+  "messages": [
+    {
+      "type": "string",
+      "message": "string",
+      "reason": "string"
+    }
+  ],
+  "contexts": [
+    {
+      "name": "string"
+    }
+  ],
+  "organization": {
+    "name": "string"
+  },
+  "queued_at": "2020-03-10T15:06:28Z",
+  "stopped_at": "2020-03-10T15:06:28Z"
+}
