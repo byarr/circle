@@ -1,16 +1,13 @@
 use git2::Repository;
 use std::path::Path;
 
-
 pub fn origin_url<P: AsRef<Path>>(p: P) -> Option<String> {
-
     Repository::discover(p).ok().and_then(|r| {
         r.find_remote("origin")
             .ok()
             .and_then(|remote| remote.url().map(|s| s.to_string()))
     })
 }
-
 
 pub fn to_slug(url: &str) -> Option<String> {
     let e = regex::Regex::new(r"[:|/]([a-zA-Z0-9_-]+)/([a-zA-Z0-9_-]+).git$").unwrap();
@@ -30,12 +27,12 @@ impl RepoInfo {
         let head = repo.head().ok();
         let branch = head.and_then(|h| h.shorthand().map(|s| s.to_string()));
 
-        let origin_url = repo.find_remote("origin").ok().and_then(|o| o.url().map(|s| s.to_string()));
+        let origin_url = repo
+            .find_remote("origin")
+            .ok()
+            .and_then(|o| o.url().map(|s| s.to_string()));
 
-        Some(RepoInfo {
-            origin_url,
-            branch,
-        })
+        Some(RepoInfo { origin_url, branch })
     }
 
     pub fn slug(&self) -> Option<String> {

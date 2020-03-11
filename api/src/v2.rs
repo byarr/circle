@@ -1,4 +1,5 @@
 use serde;
+use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::HashMap;
@@ -29,18 +30,17 @@ pub struct Pipeline {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Trigger {
-    #[serde(rename="type")]
+    #[serde(rename = "type")]
     trigger_type: String,
     received_at: String,
-    actor: Actor
+    actor: Actor,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Actor {
     login: String,
-    avatar_url: String
+    avatar_url: String,
 }
-
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Vcs {
@@ -53,7 +53,6 @@ pub struct Vcs {
 pub struct Commit {
     subject: String,
     body: String,
-
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -91,7 +90,7 @@ pub struct Workflow {
     pub status: String,
     pub pipeline_id: String,
     pub pipeline_number: i64,
-    pub project_slug: String
+    pub project_slug: String,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -115,13 +114,21 @@ impl Client {
 
     pub fn get_project(&self, slug: &str) -> Result<Project, reqwest::Error> {
         //GET /project/{project-slug}
-        let url = format!("{}/project/{}", BASE_PATH, slug);
+        self.get(format!("/project/{}", slug), None)
+    }
 
-        let resp = self
-            .client
-            .get(&url)
-            .header(API_KEY_HEADER, &self.api_key)
-            .send()?;
+    fn get<T>(&self, path: String, q: Option<Vec<(&str, &str)>>) -> Result<T, reqwest::Error>
+    where
+        T: DeserializeOwned,
+    {
+        let url = format!("{}{}", BASE_PATH, path);
+        let mut query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
+        query = match q {
+            Some(params) => query.query(&params),
+            None => query,
+        };
+
+        let resp = query.send()?;
         let resp = resp.error_for_status()?;
         resp.json()
     }
@@ -133,16 +140,9 @@ impl Client {
     ) -> Result<PipelineList, reqwest::Error> {
         //GET /project/{project-slug}/pipeline/mine
 
-        let url = format!("{}/project/{}/pipeline/mine", BASE_PATH, slug);
-        let mut query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
-        query = match page_token {
-            Some(token) => query.query(&[("page_token", token)]),
-            None => query,
-        };
+        let params = page_token.map(|token| vec![("page_token", token)]);
 
-        let resp = query.send()?;
-        let resp = resp.error_for_status()?;
-        resp.json()
+        self.get(format!("/project/{}/pipeline/mine", slug), params)
     }
 
     pub fn get_recent_workflow_runs(
@@ -153,52 +153,22 @@ impl Client {
     ) -> Result<RecentWorkflowRun, reqwest::Error> {
         //GET /insights/{project-slug}/workflows/{workflow-name}
 
-        let url = format!(
-            "{}/insights/{}/workflows/{}",
-            BASE_PATH, slug, workflow_name
-        );
-        let mut query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
-        query = match branch {
-            Some(b) => query.query(&[("branch", b)]),
-            None => query,
-        };
+        let params = branch.map(|b| vec![("branch", b)]);
 
-        let resp = query.send()?;
-        let resp = resp.error_for_status()?;
-        resp.json()
+        self.get(
+            format!("/insights/{}/workflows/{}", slug, workflow_name),
+            params,
+        )
     }
 
-    pub fn get_workflow(
-        &self,
-        id: &str
-    ) -> Result<Workflow, reqwest::Error> {
+    pub fn get_workflow(&self, id: &str) -> Result<Workflow, reqwest::Error> {
         //GET /workflow/{id}
-
-        let url = format!(
-            "{}/workflow/{}",
-            BASE_PATH, id
-        );
-        let query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
-        let resp = query.send()?;
-        let resp = resp.error_for_status()?;
-        resp.json()
+        self.get(format!("/workflow/{}", id), None)
     }
 
-    pub fn get_job_detail(
-        &self,
-        slug: &str,
-        number: &str
-    ) -> Result<JobDetail, reqwest::Error> {
+    pub fn get_job_detail(&self, slug: &str, number: &str) -> Result<JobDetail, reqwest::Error> {
         //GET /project/{project-slug}/job/{job-number}
-
-        let url = format!(
-            "{}/project/{}/job/{}",
-            BASE_PATH, slug, number
-        );
-        let query = self.client.get(&url).header(API_KEY_HEADER, &self.api_key);
-        let resp = query.send()?;
-        let resp = resp.error_for_status()?;
-        resp.json()
+        self.get(format!("/project/{}/job/{}", slug, number), None)
     }
 }
 
@@ -229,18 +199,15 @@ mod tests {
     }
     #[test]
     fn parse_workflow() {
-        let contents =
-            std::fs::read_to_string("./testdata/v2/workflow.json").unwrap();
+        let contents = std::fs::read_to_string("./testdata/v2/workflow.json").unwrap();
         let wf: Workflow = serde_json::from_str(&contents).unwrap();
         assert_eq!(0, wf.pipeline_number);
     }
 
     #[test]
     fn parse_job_details() {
-        let contents =
-            std::fs::read_to_string("./testdata/v2/job_details.json").unwrap();
+        let contents = std::fs::read_to_string("./testdata/v2/job_details.json").unwrap();
         let jb: JobDetail = serde_json::from_str(&contents).unwrap();
         assert_eq!("string", jb.web_url);
     }
-
 }
