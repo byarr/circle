@@ -17,15 +17,15 @@ pub struct Project {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Pipeline {
-    id: String,
-    project_slug: String,
-    updated_at: Option<String>,
-    number: i64,
-    state: String,
-    vcs: Vcs,
-    trigger: Trigger,
+    pub id: String,
+    pub project_slug: String,
+    pub updated_at: Option<String>,
+    pub number: i64,
+    pub state: String,
+    pub vcs: Vcs,
+    pub trigger: Trigger,
     #[serde(flatten)]
-    extras: HashMap<String, Value>,
+    pub extras: HashMap<String, Value>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -44,7 +44,8 @@ pub struct Actor {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Vcs {
-    commit: Option<Commit>,
+    pub commit: Option<Commit>,
+    pub branch: Option<String>,
     #[serde(flatten)]
     extras: HashMap<String, Value>,
 }

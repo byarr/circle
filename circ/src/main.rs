@@ -25,6 +25,8 @@ struct Pipelines {}
 struct WorkflowRuns {
     #[structopt(short, long, help = "Workflow name")]
     name: Option<String>,
+    #[structopt(short, long, help = "branch name")]
+    branch: Option<String>
 }
 
 #[derive(StructOpt)]
@@ -44,7 +46,7 @@ struct JobDetail {
 fn main() {
     let circ = Circ::from_args();
 
-    let info = RepoInfo::from_path(".").unwrap();
+    let info = RepoInfo::from_path(std::env::current_dir().unwrap()).unwrap();
     let slug = info.slug();
     let config = circ::load_config().unwrap();
     let client = api::v2::Client::new(config.token).unwrap();
@@ -52,15 +54,23 @@ fn main() {
     match circ.cmd {
         Command::Pipelines(_) => {
             let pipelines = client.get_pipelines_mine(&slug.unwrap(), None).unwrap();
-            pipelines.items.iter().for_each(|p| println!("{:?}", p));
+            match info.branch {
+                None => pipelines.items.iter().for_each(|p| println!("{:?}", p)),
+                Some(current_branch) => pipelines.items.iter()
+                    .filter(|&p| p.vcs.branch.as_ref().map(|b| b.eq(&current_branch)).unwrap_or(false) )
+                    .for_each(|p| println!("{:?}", p))
+
+            }
+
         }
         Command::Runs(wf) => {
             let wf_name = wf.name.unwrap_or("workflow".to_string());
             let runs = client
-                .get_recent_workflow_runs(&slug.unwrap(), &wf_name, None)
+                .get_recent_workflow_runs(&slug.unwrap(), &wf_name, wf.branch.as_deref())
                 .unwrap();
             runs.items
                 .iter()
+                .take(1)
                 .for_each(|r| println!("{}\t{}\t{}", r.status, r.created_at, r.url()));
         }
         Command::Workflow(wf) => {
