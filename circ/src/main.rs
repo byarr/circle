@@ -1,5 +1,6 @@
 use circ::git::RepoInfo;
 use structopt::StructOpt;
+use futures::executor::block_on;
 
 #[derive(StructOpt)]
 #[structopt(name = "circ", about = "Circleci info.")]
@@ -53,7 +54,7 @@ fn main() {
 
     match circ.cmd {
         Command::Pipelines(_) => {
-            let pipelines = client.get_pipelines_mine(&slug.unwrap(), None).unwrap();
+            let pipelines = block_on(client.get_pipelines_mine(&slug.unwrap(), None)).unwrap();
             match info.branch {
                 None => pipelines.items.iter().for_each(|p| println!("{:?}", p)),
                 Some(current_branch) => pipelines.items.iter()
@@ -65,8 +66,8 @@ fn main() {
         }
         Command::Runs(wf) => {
             let wf_name = wf.name.unwrap_or("workflow".to_string());
-            let runs = client
-                .get_recent_workflow_runs(&slug.unwrap(), &wf_name, wf.branch.as_deref())
+            let runs = block_on(client
+                .get_recent_workflow_runs(&slug.unwrap(), &wf_name, wf.branch.as_deref()))
                 .unwrap();
             runs.items
                 .iter()
@@ -74,11 +75,11 @@ fn main() {
                 .for_each(|r| println!("{}\t{}\t{}", r.status, r.created_at, r.url()));
         }
         Command::Workflow(wf) => {
-            let wf = client.get_workflow(&wf.id).unwrap();
+            let wf = block_on(client.get_workflow(&wf.id)).unwrap();
             println!("{:?}", wf);
         }
         Command::JobDetail(jd) => {
-            let details = client.get_job_detail(&slug.unwrap(), &jd.number).unwrap();
+            let details = block_on(client.get_job_detail(&slug.unwrap(), &jd.number)).unwrap();
             println!("{:?}", details);
         }
     }

@@ -104,21 +104,21 @@ pub struct JobDetail {
 
 pub struct Client {
     api_key: String,
-    client: reqwest::blocking::Client,
+    client: reqwest::Client,
 }
 
 impl Client {
     pub fn new(api_key: String) -> Result<Self, Box<dyn std::error::Error>> {
-        let client = reqwest::blocking::Client::builder().build()?;
+        let client = reqwest::Client::builder().build()?;
         Ok(Client { api_key, client })
     }
 
-    pub fn get_project(&self, slug: &str) -> Result<Project, reqwest::Error> {
+    pub async fn get_project(&self, slug: &str) -> Result<Project, reqwest::Error> {
         //GET /project/{project-slug}
-        self.get(format!("/project/{}", slug), None)
+        self.get(format!("/project/{}", slug), None).await
     }
 
-    fn get<T>(&self, path: String, q: Option<Vec<(&str, &str)>>) -> Result<T, reqwest::Error>
+    async fn get<T>(&self, path: String, q: Option<Vec<(&str, &str)>>) -> Result<T, reqwest::Error>
     where
         T: DeserializeOwned,
     {
@@ -129,12 +129,12 @@ impl Client {
             None => query,
         };
 
-        let resp = query.send()?;
+        let resp = query.send().await?;
         let resp = resp.error_for_status()?;
-        resp.json()
+        resp.json().await
     }
 
-    pub fn get_pipelines_mine(
+    pub async fn get_pipelines_mine(
         &self,
         slug: &str,
         page_token: Option<&str>,
@@ -143,10 +143,10 @@ impl Client {
 
         let params = page_token.map(|token| vec![("page_token", token)]);
 
-        self.get(format!("/project/{}/pipeline/mine", slug), params)
+        self.get(format!("/project/{}/pipeline/mine", slug), params).await
     }
 
-    pub fn get_recent_workflow_runs(
+    pub async fn get_recent_workflow_runs(
         &self,
         slug: &str,
         workflow_name: &str,
@@ -159,17 +159,17 @@ impl Client {
         self.get(
             format!("/insights/{}/workflows/{}", slug, workflow_name),
             params,
-        )
+        ).await
     }
 
-    pub fn get_workflow(&self, id: &str) -> Result<Workflow, reqwest::Error> {
+    pub async fn get_workflow(&self, id: &str) -> Result<Workflow, reqwest::Error> {
         //GET /workflow/{id}
-        self.get(format!("/workflow/{}", id), None)
+        self.get(format!("/workflow/{}", id), None).await
     }
 
-    pub fn get_job_detail(&self, slug: &str, number: &str) -> Result<JobDetail, reqwest::Error> {
+    pub async fn get_job_detail(&self, slug: &str, number: &str) -> Result<JobDetail, reqwest::Error> {
         //GET /project/{project-slug}/job/{job-number}
-        self.get(format!("/project/{}/job/{}", slug, number), None)
+        self.get(format!("/project/{}/job/{}", slug, number), None).await
     }
 }
 
